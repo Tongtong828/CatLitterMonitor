@@ -2,28 +2,26 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// ==== OLED display setup ====
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // ==== Pin definitions ====
 #define BEAM_PIN 4       // Break-beam sensor (receiver output)
-#define RELAY_PIN 5      // Relay controlling the fan
-#define BUZZER_PIN 2     // Active buzzer
+#define RELAY_PIN 5      // Relay controlling the fan (HIGH = ON for CW-019)
+#define BUZZER_PIN 2     // Active buzzer output
 #define MQ_PIN A1        // MQ135 gas sensor analog output
 
-// ==== Variables ====
-int litterCount = 0;        // Number of litter box uses detected
-bool beamBroken = false;    // Current beam break status
-bool lastBeamState = false; // Previous beam state
+// ==== Cat use detection variables ====
+int litterCount = 0;          // Number of litter box uses
+bool beamBlocked = false;     // Whether the IR beam is currently blocked
+bool catInside = false;       // Whether the cat is inside the litter box
+unsigned long debounceDelay = 150; 
+unsigned long lastChange = 0;
 
-unsigned long lastDebounceTime = 0;
-unsigned long debounceDelay = 300; // Debounce time to avoid multiple triggers
-
-// ==== Thresholds for air quality ====
-int smellLow = 300;   // Fan turns ON above this level
-int smellHigh = 450;  // Buzzer alarm above this level
+// ==== Air quality thresholds ====
+int fanThreshold = 300;     // MQ > 300 → Fan ON
+int alarmThreshold = 500;   // MQ > 500 → Fan + Buzzer ON
 
 void setup() {
 
@@ -31,12 +29,13 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
 
-  // Relay is LOW-triggered: HIGH = OFF
-  digitalWrite(RELAY_PIN, HIGH);
+  // Relay OFF by default (LOW = OFF for your module)
+  digitalWrite(RELAY_PIN, LOW);
   digitalWrite(BUZZER_PIN, LOW);
 
-  // ==== Initialize OLED ====
-  Wire.begin(11, 12); // MKR1010 I2C pins (SDA=11, SCL=12)
+  // Initialize I2C
+  Wire.begin();
+
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
   display.display();
@@ -52,45 +51,48 @@ void setup() {
 
 void loop() {
 
-  // === Read break-beam sensor ===
-  bool currentBeam = (digitalRead(BEAM_PIN) == LOW);  
-  // LOW means the beam is blocked (cat passing)
+  // ========= READ BREAK-BEAM SENSOR =========
+  bool currentBlocked = (digitalRead(BEAM_PIN) == LOW);  // LOW = beam blocked
 
-  // === Edge detection with debounce ===
-  if (currentBeam != lastBeamState) {
-    lastDebounceTime = millis();
+  // Detect changes with debounce
+  if (currentBlocked != beamBlocked) {
+    if (millis() - lastChange > debounceDelay) {
+      
+      beamBlocked = currentBlocked;
+      lastChange = millis();
+
+      // ========= CAT ENTRY/EXIT LOGIC =========
+      if (beamBlocked && !catInside) {
+        // Cat ENTERS the litter box
+        catInside = true;
+      }
+
+      if (!beamBlocked && catInside) {
+        // Cat EXITS → Count as one use
+        litterCount++;
+        catInside = false;
+      }
+    }
   }
 
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    // Count one litter box use per entry
-    if (currentBeam == true && beamBroken == false) {
-      litterCount++;
-      beamBroken = true;
-    }
-    if (currentBeam == false) {
-      beamBroken = false;
-    }
-  }
-  lastBeamState = currentBeam;
-
-  // === Read air quality from MQ135 ===
+  // ========= READ MQ135 GAS SENSOR =========
   int mq = analogRead(MQ_PIN);
 
-  // === Fan control via relay (LOW-triggered) ===
-  if (mq > smellLow) {
-    digitalWrite(RELAY_PIN, LOW);  // Fan ON
+  // ========= FAN CONTROL (HIGH = ON on YOUR RELAY) =========
+  if (mq > fanThreshold) {
+    digitalWrite(RELAY_PIN, HIGH);   // Fan ON
   } else {
-    digitalWrite(RELAY_PIN, HIGH); // Fan OFF
+    digitalWrite(RELAY_PIN, LOW);    // Fan OFF
   }
 
-  // === Alarm for strong odor ===
-  if (mq > smellHigh) {
-    tone(BUZZER_PIN, 2000);   // Buzzer alarm
+  // ========= BUZZER ALARM CONTROL =========
+  if (mq > alarmThreshold) {
+    tone(BUZZER_PIN, 2000);          // Alarm ON
   } else {
-    noTone(BUZZER_PIN);
+    noTone(BUZZER_PIN);              // Alarm OFF
   }
 
-  // ==== Update OLED display ====
+  // ========= OLED DISPLAY =========
   display.clearDisplay();
   display.setTextSize(1);
 
@@ -99,18 +101,21 @@ void loop() {
   display.println(litterCount);
 
   display.print("Beam: ");
-  display.println(currentBeam ? "BLOCKED" : "CLEAR");
+  display.println(beamBlocked ? "BLOCKED" : "CLEAR");
+
+  display.print("Cat Inside: ");
+  display.println(catInside ? "YES" : "NO");
 
   display.print("Smell: ");
   display.println(mq);
 
   display.print("Fan: ");
-  display.println(digitalRead(RELAY_PIN) == LOW ? "ON" : "OFF");
+  display.println(digitalRead(RELAY_PIN) == HIGH ? "ON" : "OFF");
 
   display.print("Alarm: ");
-  display.println(mq > smellHigh ? "YES" : "NO");
+  display.println(mq > alarmThreshold ? "YES" : "NO");
 
   display.display();
 
-  delay(100);
+  delay(80);
 }
