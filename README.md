@@ -22,8 +22,7 @@ This system improves feline welfare by monitoring behavioral patterns (which are
 
 ## 🎯 Motivation
 
-Cat litter odor is produced by the bacterial breakdown of urea and other nitrogen compounds, including ammonia, which affects indoor air quality (Trujillo & Dimas-Correa, 2025).
-Changes in urination patterns—such as increased frequency (pollakiuria)—are common clinical signs of feline lower urinary tract disease (FLUTD) (Little, 2011).
+Cat litter odor is produced by the bacterial breakdown of urea and other nitrogen compounds, including ammonia, which affects indoor air quality. Changes in urination patterns—such as increased frequency (pollakiuria)—are common clinical signs of feline lower urinary tract disease (FLUTD)
 
 Monitoring both litter box usage and odor levels therefore supports early detection of urinary issues and improves environmental hygiene.
 
