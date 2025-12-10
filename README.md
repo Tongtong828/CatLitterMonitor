@@ -1,8 +1,8 @@
-🐾 Smart Cat Litter Environmental Monitor
+# 🐾 Smart Cat Litter Environmental Monitor
 
 A sensor-based system for monitoring cat litter box usage and odor levels.
 
-📌 Overview
+## 📌 Overview
 
 This project is a smart environmental monitoring system designed for indoor cats. It combines behavior tracking and air-quality sensing to:
 
@@ -20,14 +20,15 @@ Output full system data to the serial monitor for debugging
 
 This system improves feline welfare by monitoring behavioral patterns (which are linked to urinary tract health) and maintaining a cleaner, healthier indoor environment.
 
-🎯 Motivation
+## 🎯 Motivation
 
 Cat litter odor is produced by the bacterial breakdown of urea and other nitrogen compounds, including ammonia, which affects indoor air quality (Trujillo & Dimas-Correa, 2025).
 Changes in urination patterns—such as increased frequency (pollakiuria)—are common clinical signs of feline lower urinary tract disease (FLUTD) (Little, 2011).
 
 Monitoring both litter box usage and odor levels therefore supports early detection of urinary issues and improves environmental hygiene.
 
-🛠 Hardware Components
+## 🛠 Hardware Components
+
 Component	Purpose
 Arduino MKR WiFi 1010	Microcontroller
 IR Break-Beam Sensor	Detects entry & exit cycles
@@ -38,11 +39,13 @@ Active Buzzer	High-odor alarm
 SSD1306 0.96" OLED	Displays daily usage count
 Jumper wires & breadboard	Connections
 
-🔌 Wiring
+## 🔌 Wiring
+
 <img width="1981" height="2156" alt="CatLitter_bb" src="https://github.com/user-attachments/assets/a37dd710-8966-45bc-847f-5328febbc929" />
 
-🔍 System Logic
-✔ Cat Usage Detection (Two-Cycle Method)
+## 🔍 System Logic
+
+### ✔ Cat Usage Detection (Two-Cycle Method)
 
 A full toilet use requires:
 
@@ -53,10 +56,10 @@ Exit cycle:  CLEAR → BLOCKED → CLEAR
 Only when both cycles complete does the system increment the daily usage counter.
 This prevents false triggers from tail movement, hesitation, or partial entry.
 
-✔ Odor-Based Fan & Alarm Control
-MQ135 Value	Fan	Buzzer
-≤ 300	OFF	OFF
-301–499	ON	OFF
-≥ 500	ON	ON
+### ✔ Odor-Based Fan & Alarm Control
 
-All detailed sensor values are printed to the serial monitor.
+| MQ135 Value | Fan  | Buzzer |
+| :---------: | :--: | :----: |
+|    ≤ 300    | OFF  |  OFF   |
+|   301–499   |  ON  |  OFF   |
+|    ≥ 500    |  ON  |   ON   |
