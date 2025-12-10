@@ -29,15 +29,18 @@ Monitoring both litter box usage and odor levels therefore supports early detect
 
 ## 🛠 Hardware Components
 
-Component	Purpose
-Arduino MKR WiFi 1010	Microcontroller
-IR Break-Beam Sensor	Detects entry & exit cycles
-MQ135 Gas Sensor	Detects ammonia/VOC odor levels
-Relay Module (CW-019, HIGH-trigger)	Switches fan power
-5V DC Fan	Ventilation
-Active Buzzer	High-odor alarm
-SSD1306 0.96" OLED	Displays daily usage count
-Jumper wires & breadboard	Connections
+| Component                           | Purpose                     |
+| ----------------------------------- | --------------------------- |
+| Arduino MKR WiFi 1010               | Microcontroller             |
+| IR Break-Beam Sensor                | Detects entry & exit cycles |
+| MQ135 Gas Sensor                    | Detects ammonia levels      |
+| Relay Module (CW-019, HIGH-trigger) | Switches fan power          |
+| 5V DC Fan                           | Ventilation                 |
+| Active Buzzer                       | High-odor alarm             |
+| SSD1306 0.96" OLED                  | Displays daily usage count  |
+| Jumper wires & breadboard           | Connections                 |
+
+
 
 ## 🔌 Wiring
 
